@@ -3,7 +3,7 @@ pragma solidity ^0.8.7;
 import "lib/openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
 
 contract Booking {
-    enum Class{lowBudget, economy, executive}
+    //enum Class{lowBudget, economy, executive}
     uint24 roomId;
     address owner;
     IERC20 Token;
@@ -24,7 +24,8 @@ contract Booking {
         uint32 pricePerDay;
         bool bookingStatus;
         string roomDescription;
-        Class class;
+        bool ownerCheckedIn;
+        bool ownerCheckedOut;
     }
 
     Rooms [] lowBudget;
@@ -42,6 +43,7 @@ contract Booking {
         rooms.pricePerDay = _price;
         rooms.roomDescription = _roomDescription;
         rooms.bookingStatus = false;
+        rooms.ownerCheckedIn = false;
 
         if (_price <= 1000) {
             lowBudget.push(rooms);
@@ -59,7 +61,7 @@ contract Booking {
         if(msg.sender == address(0)) {
             revert("Zero address cannot book a room");
         }
-        if(rooms.bookingStatus = true){
+        if(rooms.bookingStatus == true){
             revert("This room is already booked");
         }
         if(Token.balanceOf(msg.sender) != rooms.pricePerDay * numberOfDays) {
@@ -101,6 +103,25 @@ contract Booking {
         }
         return Executive;
     }
+
+    function checkedIn(uint24 _roomId) external {
+        Rooms storage rooms = roomsTrack[_roomId];
+        require(roomOwner[msg.sender] == _roomId, "You did not book this room");
+        rooms.ownerCheckedIn = true;
+    }
+    function checkedOut(uint24 _roomId) external {
+        roomOwner[msg.sender] = _roomId;
+        Rooms storage rooms = roomsTrack[_roomId];
+
+        rooms.bookingStatus = false;
+        rooms.ownerCheckedOut = true;
+        rooms.ownerCheckedIn = false;
+        roomOwner[msg.sender];
+
+        
+        // This function would return the bookingStatus of the room to false 
+        //as the customet checks out
+   }
 
     function withdrawBalance(address payable _receiver) external Owner {
         _receiver.transfer(address(this).balance);
