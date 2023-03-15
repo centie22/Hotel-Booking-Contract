@@ -19,6 +19,12 @@ contract Booking {
        }
         _;
     }
+
+    event RoomAdded (address indexed Admin, uint32 roomPrice);
+    event Booked (address indexed customer, uint RoomId, uint daysReserved, string message);
+    event CheckedIn (address customer, string message);
+    event Checkedout (address customer, string message);
+
     struct Rooms{
         uint24 roomId;
         uint32 pricePerDay;
@@ -52,7 +58,7 @@ contract Booking {
         } else{
             executive.push(rooms);
         }
-
+        emit RoomAdded(owner, _price);
     }
 
 
@@ -65,10 +71,11 @@ contract Booking {
             revert("This room is already booked");
         }
         if(Token.balanceOf(msg.sender) != rooms.pricePerDay * numberOfDays) {
-            revert("You do not have enough USDT to pay for this room");
+            revert("You do not have enough cUSD to pay for this room");
         }
         roomOwner[msg.sender] = _roomId;
         rooms.bookingStatus = true;
+        emit Booked(msg.sender, _roomId, numberOfDays, "Thank you for reserving a room at our hotel! We hope to have you soon.");
     }
 
     function seeAllLowBudget () external view returns (Rooms[] memory ){
@@ -108,6 +115,7 @@ contract Booking {
         Rooms storage rooms = roomsTrack[_roomId];
         require(roomOwner[msg.sender] == _roomId, "You did not book this room");
         rooms.ownerCheckedIn = true;
+        emit CheckedIn(msg.sender, "You have successfully checked in to your reserved room. We hope you enjoy stay here.");
     }
     function checkedOut(uint24 _roomId) external {
         roomOwner[msg.sender] = _roomId;
@@ -116,8 +124,8 @@ contract Booking {
         rooms.bookingStatus = false;
         rooms.ownerCheckedOut = true;
         rooms.ownerCheckedIn = false;
-        roomOwner[msg.sender];
-
+        delete roomOwner[msg.sender];
+        emit Checkedout(msg.sender, "You have successfully checked out of this room. We trust you had a pleasant stay here.");
         
         // This function would return the bookingStatus of the room to false 
         //as the customet checks out
