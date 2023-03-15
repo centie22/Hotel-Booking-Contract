@@ -8,7 +8,7 @@
 contract CounterTest is Test {
     Booking public booking;
     address User = 0x0b5453635E5325f5385ca1643C9e9EB173f9D5a8;
-    IERC20 token = IERC20(0xdAC17F958D2ee523a2206206994597C13D831ec7); 
+    IERC20 token = IERC20(0x874069Fa1Eb16D44d622F2e0Ca25eeA172369bC1); 
     function setUp() public {
        booking = new Booking(token);
     }
